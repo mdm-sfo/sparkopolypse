@@ -1,7 +1,7 @@
 # Kalshi TimesFM Forecast Trading System
 
 **Last updated:** 2026-02-26
-**Status:** LIVE trading ($3/trade), distributed data collection across 3 nodes
+**Status:** LIVE trading ($30/trade), distributed data collection across 3 nodes
 
 ---
 
@@ -77,7 +77,7 @@ An automated Kalshi prediction market trading system powered by Google's TimesFM
 
 | Service | Description | Status |
 |---------|-------------|--------|
-| `timesfm-trader` | **LIVE** signal trader ($3/trade, 5c threshold) | **enabled** |
+| `timesfm-trader` | **LIVE** signal trader ($30/trade, 5c threshold) | **enabled** |
 
 ### Distributed Data Collection (background processes, not services):
 - Spark: `fast_collector.py --node-id 0 --total-nodes 3`
@@ -97,7 +97,7 @@ An automated Kalshi prediction market trading system powered by Google's TimesFM
 - **10c max spread** — skip illiquid markets
 - **3 trades per series per scan** — forces diversification
 - **100 contract max position** — caps total exposure (~$60-80)
-- **$3 per trade wager**
+- **$30 per trade wager**
 
 ### Slippage (added 2026-02-26):
 - `slippage = min(int(magnitude * 0.20), 3)` — up to 20% of signal magnitude, capped at 3c
@@ -107,6 +107,17 @@ An automated Kalshi prediction market trading system powered by Google's TimesFM
 ### Resting Order Handling:
 - If an order doesn't fill within 15 seconds, it's automatically cancelled
 - Only filled orders get TP/SL monitors and trade logging
+
+### Performance Optimizations:
+- **Parallel candle fetches** — `asyncio.gather()` instead of sequential per-market
+- **Candle cache** — skips API calls when no new hourly candle exists yet (cache hit = 0 API calls)
+- Cold scan ~88s, warm scan with cache hits near-instant per series
+- **Low balance alert** — Pushover notification when balance drops below $30
+
+### Orderbook Depth in Notifications:
+- Pushover trade alerts include available NO-side liquidity at limit price
+- Format: "Depth @ ≤87c: 84 contracts ($75) across 3 levels"
+- Helps gauge how much bigger you could bet without moving the book
 
 ### TP/SL Monitoring:
 - AutoCloseMonitor polls bid prices every 5 seconds via REST API
