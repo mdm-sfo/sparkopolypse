@@ -44,22 +44,34 @@ TPSL_DEFAULTS = {
         (10, 20): {"tp": 50, "sl": 8},
         (20, 100): {"tp": 50, "sl": 10},
     },
-    "KXBTC": {  # Bitcoin
-        (2, 5): {"tp": 50, "sl": 10},
-        (5, 10): {"tp": 50, "sl": 5},
+    "KXBTC": {  # Bitcoin — wider stops, finer magnitude buckets
+        (2, 5): {"tp": 40, "sl": 8},
+        (5, 10): {"tp": 50, "sl": 8},
         (10, 20): {"tp": 50, "sl": 10},
-        (20, 100): {"tp": 50, "sl": 10},
+        (20, 40): {"tp": 50, "sl": 12},
+        (40, 70): {"tp": 60, "sl": 15},
+        (70, 100): {"tp": 70, "sl": 15},
     },
-    "KXETH": {  # Ethereum (use BTC defaults until we have data)
-        (2, 5): {"tp": 50, "sl": 10},
-        (5, 10): {"tp": 50, "sl": 5},
-        (10, 20): {"tp": 50, "sl": 10},
-        (20, 100): {"tp": 50, "sl": 10},
+    "KXETH": {  # Ethereum — similar to BTC, slightly wider SL (higher vol)
+        (2, 5): {"tp": 40, "sl": 10},
+        (5, 10): {"tp": 50, "sl": 10},
+        (10, 20): {"tp": 50, "sl": 12},
+        (20, 40): {"tp": 50, "sl": 15},
+        (40, 70): {"tp": 60, "sl": 15},
+        (70, 100): {"tp": 70, "sl": 18},
     },
 }
 
 # Fallback TP/SL for unknown series
 TPSL_FALLBACK = {"tp": 20, "sl": 5}
+
+# Confidence thresholds: {series_prefix: (high, med-high, med)}
+# Crypto needs higher magnitude for same confidence (more volatile)
+CONFIDENCE_THRESHOLDS = {
+    "KXBTC": (40, 20, 8),
+    "KXETH": (40, 20, 8),
+}
+CONFIDENCE_DEFAULT = (20, 10, 5)  # weather, equities, etc.
 
 
 def _load_model():
@@ -266,12 +278,17 @@ class Handler(BaseHTTPRequestHandler):
                 series = m.get("series_ticker", "")
                 tpsl = _get_tpsl(series, magnitude)
 
-                # Confidence level based on magnitude
-                if magnitude >= 20:
+                # Confidence level based on magnitude (series-specific)
+                hi, mh, md = CONFIDENCE_DEFAULT
+                for prefix, thresholds in CONFIDENCE_THRESHOLDS.items():
+                    if series.startswith(prefix):
+                        hi, mh, md = thresholds
+                        break
+                if magnitude >= hi:
                     confidence = "high"
-                elif magnitude >= 10:
+                elif magnitude >= mh:
                     confidence = "medium-high"
-                elif magnitude >= 5:
+                elif magnitude >= md:
                     confidence = "medium"
                 else:
                     confidence = "low"
