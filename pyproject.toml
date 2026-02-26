@@ -1,0 +1,10 @@
+[project]
+name = "kalshi-forecast"
+version = "0.1.0"
+description = "Kalshi weather market forecasting with TimesFM"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx",
+    "pandas",
+    "pyarrow",
+]

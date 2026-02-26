@@ -1,0 +1,17 @@
+[Unit]
+Description=Kalshi Data Collector (BTC, ETH)
+After=network.target
+
+[Service]
+Type=simple
+User=matthewmurray
+WorkingDirectory=/home/matthewmurray/kalshi-forecast
+Environment=PATH=/home/matthewmurray/timesfm/.venv/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/home/matthewmurray/timesfm/.venv/bin/python3 -u /home/matthewmurray/kalshi-forecast/run_collect_service.py
+Restart=on-failure
+RestartSec=60
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

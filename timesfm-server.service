@@ -1,0 +1,20 @@
+[Unit]
+Description=TimesFM Forecast Server (GPU)
+After=network.target
+
+[Service]
+Type=simple
+User=matthewmurray
+WorkingDirectory=/home/matthewmurray/kalshi-forecast
+Environment=PATH=/home/matthewmurray/timesfm/.venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=TIMESFM_REMOTE_PORT=8787
+Environment=TIMESFM_REMOTE_TOKEN=${TIMESFM_REMOTE_TOKEN}
+Environment=HF_TOKEN=${HF_TOKEN}
+ExecStart=/home/matthewmurray/timesfm/.venv/bin/python3 -u /home/matthewmurray/kalshi-forecast/timesfm_server.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

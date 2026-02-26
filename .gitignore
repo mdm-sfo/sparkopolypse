@@ -1,0 +1,31 @@
+# Data files (too large for git, collected per-machine)
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Backtest results (regeneratable)
+backtest_*.csv
+tpsl_grid_*.csv
+
+# Notebooks checkpoints
+.ipynb_checkpoints/
+
+# Environment
+.env
+*.env
+.venv/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
