@@ -73,6 +73,28 @@ CONFIDENCE_THRESHOLDS = {
 }
 CONFIDENCE_DEFAULT = (20, 10, 5)  # weather, equities, etc.
 
+# Per-series minimum magnitude thresholds (overrides request-level threshold)
+# Based on realistic backtest parameter sweep 2026-02-26
+SERIES_MIN_MAGNITUDE = {
+    # Profitable cities (realistic backtest 2026-02-26, all 18 cities tested)
+    "KXHIGHNY": 20,     # NYC: PF 2.82 at 20c, 31 trades, 61% WR
+    "KXHIGHAUS": 10,    # Austin: PF 1.39 at 10c, 34 trades, 47% WR
+    "KXHIGHTDC": 10,    # Washington DC: PF 10.35 at 10c, 6 trades, 83% WR
+    "KXHIGHTLV": 10,    # Las Vegas: PF 4.03 at 10c, 5 trades, 60% WR
+    "KXHIGHLAX": 20,    # LA: PF 2.39 at 20c, 4 trades (watch list)
+    # Disabled cities (losing at every threshold)
+    "KXHIGHCHI": 999,   # Chicago: never profitable (lake effect)
+    "KXHIGHDEN": 999,   # Denver: never profitable (mountain)
+    "KXHIGHTATL": 999,  # Atlanta: losing
+    "KXHIGHTSEA": 999,  # Seattle: losing (coastal)
+    "KXHIGHTSFO": 999,  # San Francisco: worst performer -102c (coastal)
+    "KXHIGHTHOU": 999,  # Houston: losing
+    "KXHIGHTMIN": 999,  # Minneapolis: near breakeven but losing
+    "KXHIGHTNOLA": 999, # New Orleans: near breakeven but losing
+    "KXHIGHTPHX": 999,  # Phoenix: losing
+    # Crypto + S&P use request-level threshold (default 5c) — already profitable
+}
+
 
 def _load_model():
     global MODEL
@@ -271,11 +293,21 @@ class Handler(BaseHTTPRequestHandler):
                     skipped += 1
                     continue
 
+                # Per-series minimum magnitude (from backtest optimization)
+                series = m.get("series_ticker", "")
+                series_min = None
+                for prefix, min_mag in SERIES_MIN_MAGNITUDE.items():
+                    if series.startswith(prefix):
+                        series_min = min_mag
+                        break
+                if series_min is not None and magnitude < series_min:
+                    skipped += 1
+                    continue
+
                 # Map direction to Kalshi side
                 side = "yes" if direction == "UP" else "no"
 
-                # Get TP/SL recommendation
-                series = m.get("series_ticker", "")
+                # Get TP/SL recommendation (series already set above)
                 tpsl = _get_tpsl(series, magnitude)
 
                 # Confidence level based on magnitude (series-specific)

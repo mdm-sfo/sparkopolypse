@@ -3,9 +3,14 @@ from pathlib import Path
 API_BASE = "https://api.elections.kalshi.com/trade-api/v2"
 
 WEATHER_SERIES = [
-    "KXHIGHNY",   # NYC high temp
-    "KXHIGHCHI",  # Chicago high temp
-    "KXHIGHLAX",  # LA high temp
+    # Active (backtested profitable)
+    "KXHIGHNY",   # NYC high temp — 20c threshold
+    "KXHIGHAUS",  # Austin high temp — 10c threshold
+    "KXHIGHTDC",  # Washington DC high temp — 10c threshold
+    "KXHIGHTLV",  # Las Vegas high temp — 10c threshold
+    "KXHIGHLAX",  # LA high temp — 20c threshold (watch list)
+    # Disabled (data collection only, not traded)
+    "KXHIGHCHI",  # Chicago — never profitable
 ]
 
 FINANCIAL_SERIES = [
